@@ -1,6 +1,9 @@
 { pkgs ? import ./nix { system = "aarch64-linux"; }
 }:
 let
+  kernel = pkgs.callPackage ./kernel-test.nix { kernelPatches = []; };
+  linuxPackages = pkgs.linuxPackagesFor kernel;
+
   makeNetboot = config:
     let
       config_evaled = import "${pkgs.path}/nixos/lib/eval-config.nix" config;
@@ -65,7 +68,7 @@ in makeNetboot {
           "cma=0M" "biosdevname=0" "net.ifnames=0" "console=ttyAMA0,115200"
           "initrd=initrd"
         ];
-        kernelPackages = pkgs.linuxPackages_5_15;
+        kernelPackages = linuxPackages;
         #
         kernel.sysctl."kernel.hostname" = "${config.networking.hostName}.${config.networking.domain}";
       };
